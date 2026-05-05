@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TYT Analiz Pro v4</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.mjs" type="module"></script>
+</head>
+<body>
+  <section id="login" class="login-screen">
+    <div class="login-card pop">
+      <div class="brand-dot"></div>
+      <h1>TYT Analiz Pro</h1>
+      <p>PDF okuyucu, konu analizi, hata nedeni ve A4 rapor sistemi</p>
+      <input id="password" type="password" placeholder="Şifre" autocomplete="current-password" />
+      <button id="loginBtn" class="primary">Giriş Yap</button>
+      <small>Şifre: Yusuf</small>
+    </div>
+  </section>
+
+  <main id="app" class="hidden">
+    <aside class="side">
+      <div class="logo"><span></span><b>TYT Pro v4</b></div>
+      <button class="nav active" data-page="overview">Genel Bakış</button>
+      <button class="nav" data-page="import">PDF / Dosya Yükle</button>
+      <button class="nav" data-page="review">Kontrol & Düzelt</button>
+      <button class="nav" data-page="topics">Konu Analizi</button>
+      <button class="nav" data-page="compare">Karşılaştır</button>
+      <button class="nav" data-page="branch">Branş Denemesi</button>
+      <button class="nav" data-page="backup">Geçmiş / Yedek</button>
+      <button class="nav" data-page="report">A4 Rapor</button>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Genel Bakış</h2>
+          <p id="subtitle">Deneme gelişimini ve konu eksiklerini tek ekranda gör.</p>
+        </div>
+        <div class="top-actions">
+          <button id="sampleBtn" class="ghost">Örnek Veri</button>
+          <button id="printBtn" class="primary">A4 Yazdır</button>
+        </div>
+      </header>
+
+      <section id="overview" class="page active">
+        <div class="grid cards4" id="summaryCards"></div>
+        <div class="grid two">
+          <div class="panel chart-panel"><h3>Net Zaman Grafiği</h3><div class="chart-wrap fixed"><canvas id="netTimeChart"></canvas></div></div>
+          <div class="panel chart-panel"><h3>Ders Bazlı Son Deneme</h3><div class="chart-wrap fixed"><canvas id="lessonChart"></canvas></div></div>
+        </div>
+        <div class="panel"><h3>Son Uyarılar</h3><div id="smartWarnings" class="warning-list"></div></div>
+      </section>
+
+      <section id="import" class="page">
+        <div class="panel upload-panel">
+          <h3>PDF / TXT / JSON Yükle</h3>
+          <p>Bir veya birden fazla sınav sonuç belgesi yükleyebilirsin. Sistem dersleri ve konu satırlarını ayırır; sonra sana kontrol ekranı açar.</p>
+          <input id="fileInput" type="file" accept=".pdf,.txt,.json,application/pdf" multiple />
+          <div class="import-actions">
+            <button id="parseBtn" class="primary">Dosyaları Oku</button>
+            <button id="clearPendingBtn" class="ghost">Bekleyenleri Temizle</button>
+          </div>
+          <div id="parseStatus" class="status"></div>
+        </div>
+        <div class="panel">
+          <h3>Okuma Mantığı</h3>
+          <ul class="nice-list">
+            <li>Ders özet satırlarını okur: Türkçe, T.Sosyal, T.Matematik, T.Fen.</li>
+            <li>Konu satırlarını ayırır: D = doğru, Y = yanlış, B = boş.</li>
+            <li>Her ders için soru listesi oluşturur; yanlış ve boşları raporda öne çıkarır.</li>
+            <li>Birden fazla PDF yüklenirse aynı konudaki tekrar eden hataları toplar.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="review" class="page">
+        <div class="panel"><h3>Kontrol & Düzeltme</h3><p>Dosya okunduktan sonra buradan eksik/yanlış yerleri düzelt. Hata nedenini seçebilir veya kendin yazabilirsin.</p></div>
+        <div id="reviewList"></div>
+      </section>
+
+      <section id="topics" class="page">
+        <div class="grid two">
+          <div class="panel chart-panel"><h3>Hata Tekrar Grafiği</h3><div class="chart-wrap fixed"><canvas id="topicErrorChart"></canvas></div></div>
+          <div class="panel"><h3>Öncelikli Çalışılacak Konular</h3><div id="priorityList"></div></div>
+        </div>
+        <div class="panel"><h3>Derslere Göre Konu Detayı</h3><div id="topicDetails"></div></div>
+      </section>
+
+      <section id="compare" class="page">
+        <div class="panel compare-box">
+          <h3>Deneme Karşılaştır</h3>
+          <select id="compareA"></select><select id="compareB"></select>
+          <button id="compareBtn" class="primary">Karşılaştır</button>
+        </div>
+        <div id="compareResult" class="grid cards4"></div>
+      </section>
+
+      <section id="branch" class="page">
+        <div class="panel"><h3>Branş Denemesi</h3><p>Tek ders veya alt branş denemesi ekle. Örn: Türkçe paragraf, matematik problemler, fizik, kimya, biyoloji.</p></div>
+        <div class="panel branch-form">
+          <input id="branchName" placeholder="Deneme adı" />
+          <select id="branchLesson"><option>Türkçe</option><option>Matematik</option><option>Geometri</option><option>Fizik</option><option>Kimya</option><option>Biyoloji</option><option>Tarih</option><option>Coğrafya</option><option>Felsefe</option><option>Din</option></select>
+          <input id="branchTotal" type="number" placeholder="Soru" min="1" max="80" />
+          <input id="branchCorrect" type="number" placeholder="Doğru" min="0" />
+          <input id="branchWrong" type="number" placeholder="Yanlış" min="0" />
+          <button id="saveBranch" class="primary">Kaydet</button>
+        </div>
+        <div id="branchList"></div>
+      </section>
+
+      <section id="backup" class="page">
+        <div class="grid two">
+          <div class="panel"><h3>Yedek İndir</h3><p>Tüm deneme, konu ve hata nedeni verilerini JSON dosyası olarak indir.</p><button id="exportBtn" class="primary">JSON İndir</button></div>
+          <div class="panel"><h3>Yedek Yükle</h3><p>Eski analiz dosyanı yükle, kaldığın yerden devam et.</p><input id="backupInput" type="file" accept=".json" /><button id="importBackupBtn" class="primary">Yedeği Yükle</button></div>
+        </div>
+        <div class="panel"><h3>Kayıtlı Denemeler</h3><div id="historyList"></div></div>
+      </section>
+
+      <section id="report" class="page report-page">
+        <div class="report-toolbar no-print"><button id="buildReportBtn" class="primary">Raporu Yenile</button><button onclick="window.print()" class="ghost">A4 Çıktı Al</button></div>
+        <article id="reportArea" class="a4-report"></article>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
